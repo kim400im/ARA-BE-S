@@ -47,7 +47,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // CORS 설정 추가
 // CORS 설정
-app.use(cors({ origin: "http://localhost:5500", credentials: true }));
+// app.use(cors({ origin: "http://localhost:5500", credentials: true }));
+app.use(
+  cors({
+    origin: ["http://localhost:5500", "http://127.0.0.1:5500"], // 허용할 출처
+    credentials: true, // 쿠키 허용
+  })
+);
 
 // app.use("/", require("./routes/mainRoutes"))
 app.use("/auth", require("./routes/authRoutes"))
