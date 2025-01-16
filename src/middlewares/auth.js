@@ -7,6 +7,7 @@ const checkLogin = (req, res, next)=>{
     const authHeader = req.headers.authorization;
     console.log("Authorization Header:", authHeader);
     const token = authHeader && authHeader.split(" ")[1];
+    // const token = req.cookies.token;
     console.log(token)
 
     if(!token){

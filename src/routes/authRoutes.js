@@ -99,4 +99,34 @@ router.post("/register", async (req, res) => {
 });
 
 
+// 로그인 상태 확인 및 사용자 정보 제공 API
+router.get("/user-info", (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+  console.log("Authorization Header:", authHeader); // 디버깅 추가
+  console.log("usef info token is ", token);
+
+  if (!token) {
+    console.log("Token not provided"); // 디버깅 추가
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, jwtSecret);
+    // console.log('username is ', username)
+    return res.status(200).json({ username: decoded.userid, userid: decoded.userId });
+  } catch (err) {
+    console.error("JWT verification failed:", err); // 디버깅 추가
+    return res.status(403).json({ message: "Invalid or expired token" });
+  }
+});
+
+// 로그아웃 처리 (프론트엔드에서 토큰 삭제로 처리 가능)
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", {httpOnly:true,});
+  console.log("logout success")
+  // res.cookie("token", "", { httpOnly: true, maxAge: 0 }); // 쿠키 만료
+  res.status(200).json({ message: "Logged out successfully" });
+});
+
 module.exports = router;

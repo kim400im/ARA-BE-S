@@ -7,7 +7,7 @@ app.use(express.urlencoded({extended: true}));
 const bodyParser = require("body-parser");
 // const dbConnect = require("./config/dbConnect");
 // const expressLayouts = require("express-ejs-layouts")
-// const cookieParser = require("cookie-parser")
+const cookieParser = require("cookie-parser")
 // const methodOverride = require("method-override")
 // const http = require('http')
 // const path = require('path')
@@ -39,7 +39,7 @@ const bodyParser = require("body-parser");
 // app.use(expressLayouts);
 // app.use(express.static(path.join(__dirname, "public")));
 
-// app.use(cookieParser())
+app.use(cookieParser())
 // app.use(methodOverride("_method"));
 // Middleware
 app.use(bodyParser.json());

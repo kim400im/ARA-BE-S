@@ -5,7 +5,6 @@
 
 // // POST /api/chat
 // router.post('/', handleChat);
-
 // module.exports = router;
 const express = require("express");
 const router = express.Router();
@@ -18,6 +17,7 @@ const axios = require("axios");
 router.post("/new", authenticateToken, async (req, res) => {
   const { message, chatroom_id } = req.body;
   const userId = req.user.userId;
+  console.log("got post")
 
   if (!message) {
     return res.status(400).json({ message: "userId and message are required." });
@@ -43,6 +43,7 @@ router.post("/new", authenticateToken, async (req, res) => {
 
       chatroom = existingChatroom;
     } else {
+      console.log("make chatroom!")
       // chatroom_id가 없으면 subjects와 chatrooms 생성
       const subjectName = `과목${Date.now()}`; // 고유한 과목 이름 생성
       const { data: subject, error: subjectError } = await supabase
