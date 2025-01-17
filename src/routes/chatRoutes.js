@@ -14,7 +14,7 @@ const authenticateToken = require("../middlewares/auth");
 const axios = require("axios");
 
 // 채팅 메시지 처리 API
-router.post("/new", authenticateToken, async (req, res) => {
+router.post("/chat/new", authenticateToken, async (req, res) => {
   const { message, chatroom_id } = req.body;
   const userId = req.user.userId;
   console.log("got post")
@@ -128,6 +128,52 @@ router.post("/new", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Error processing chat:", error);
     return res.status(500).json({ message: "An error occurred while processing chat." });
+  }
+});
+
+
+
+
+
+
+// 채팅방 데이터 API
+router.get("/chatroom/:id", authenticateToken, async (req, res) => {
+  const chatroomId = req.params.id;
+  const userId = req.user.userId;
+
+  try {
+      // chatroomId에서 '=' 문자 제거 (있는 경우)
+      const cleanChatroomId = chatroomId.replace('=', '');
+
+      // 채팅방 정보 조회
+      const { data: chatroom, error: chatroomError } = await supabase
+          .from("chatrooms")
+          .select("id, title, subject_id")
+          .eq("id", cleanChatroomId)
+          .eq("user_id", userId)
+          .single();
+
+      if (chatroomError || !chatroom) {
+          console.error("Chatroom error:", chatroomError);
+          return res.status(404).json({ message: "채팅방을 찾을 수 없습니다." });
+      }
+
+      // 채팅 메시지 조회
+      const { data: messages, error: messagesError } = await supabase
+          .from("messages")
+          .select("id, sender_type, message_type, content, created_at")
+          .eq("chatroom_id", cleanChatroomId)
+          .order("created_at", { ascending: true });
+
+      if (messagesError) {
+          console.error("Messages error:", messagesError);
+          return res.status(500).json({ message: "메시지 조회 중 오류가 발생했습니다." });
+      }
+
+      res.json({ chatroom, messages });
+  } catch (error) {
+      console.error("Server error:", error);
+      res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 });
 

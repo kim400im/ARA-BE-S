@@ -58,7 +58,7 @@ app.use(
 // app.use("/", require("./routes/mainRoutes"))
 app.use("/auth", require("./routes/authRoutes"))
 // app.use("/", require("./routes/postRoutes"))
-app.use("/chat", require("./routes/chatRoutes"))
+app.use("/", require("./routes/chatRoutes"))
 // app.use("/", require("./routes/openchatRoutes"))
 
 const port = 8008
