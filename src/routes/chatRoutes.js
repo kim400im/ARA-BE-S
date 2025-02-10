@@ -177,4 +177,28 @@ router.get("/chatroom/:id", authenticateToken, async (req, res) => {
   }
 });
 
+
+router.get("/api/chatrooms", authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // 유저 정보 가져오기
+
+  try {
+    // 현재 로그인한 사용자의 채팅방 목록 가져오기
+    const { data: chatrooms, error } = await supabase
+      .from("chatrooms")
+      .select("id, title")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching chatrooms:", error);
+      return res.status(500).json({ message: "채팅방 정보를 불러오는 중 오류 발생" });
+    }
+
+    res.json({ chatrooms });
+  } catch (err) {
+    console.error("Server error:", err);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
+
 module.exports = router;
