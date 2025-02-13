@@ -201,4 +201,64 @@ router.get("/api/chatrooms", authenticateToken, async (req, res) => {
   }
 });
 
+router.delete("/api/chatroom/:id", authenticateToken, async (req, res) => {
+  const chatroomId = req.params.id;
+  const userId = req.user.userId; // 로그인한 사용자 ID
+
+  try {
+    // 채팅방 존재 여부 및 소유자 확인
+    const { data: chatroom, error: chatroomError } = await supabase
+      .from("chatrooms")
+      .select("id, subject_id")
+      .eq("id", chatroomId)
+      .eq("user_id", userId)
+      .single();
+
+    if (chatroomError || !chatroom) {
+      console.error("Chatroom not found or unauthorized.");
+      return res.status(404).json({ message: "채팅방을 찾을 수 없거나 삭제 권한이 없습니다." });
+    }
+
+    // messages 테이블에서 해당 채팅방의 메시지 삭제
+    const { error: messagesError } = await supabase
+      .from("messages")
+      .delete()
+      .eq("chatroom_id", chatroomId);
+
+    if (messagesError) {
+      console.error("Error deleting messages:", messagesError);
+      return res.status(500).json({ message: "메시지 삭제 중 오류가 발생했습니다." });
+    }
+
+    // subjects 테이블에서 해당 subject 삭제
+    const { error: subjectError } = await supabase
+      .from("subjects")
+      .delete()
+      .eq("id", chatroom.subject_id);
+
+    if (subjectError) {
+      console.error("Error deleting subject:", subjectError);
+      return res.status(500).json({ message: "과목 삭제 중 오류가 발생했습니다." });
+    }
+
+    // chatrooms 테이블에서 해당 채팅방 삭제
+    const { error: chatroomDeleteError } = await supabase
+      .from("chatrooms")
+      .delete()
+      .eq("id", chatroomId);
+
+    if (chatroomDeleteError) {
+      console.error("Error deleting chatroom:", chatroomDeleteError);
+      return res.status(500).json({ message: "채팅방 삭제 중 오류가 발생했습니다." });
+    }
+
+    return res.status(200).json({ message: "채팅방이 성공적으로 삭제되었습니다." });
+
+  } catch (error) {
+    console.error("Server error:", error);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+});
+
+
 module.exports = router;
