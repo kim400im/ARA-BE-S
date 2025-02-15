@@ -260,5 +260,58 @@ router.delete("/api/chatroom/:id", authenticateToken, async (req, res) => {
   }
 });
 
+router.put("/api/chatroom/:id", authenticateToken, async (req, res) => {
+  const chatroomId = req.params.id;
+  const userId = req.user.userId;
+  const { newTitle } = req.body;
+
+  if (!newTitle || newTitle.trim() === "") {
+    return res.status(400).json({ message: "새로운 채팅방 이름을 입력해야 합니다." });
+  }
+
+  try {
+    // 채팅방 존재 여부 및 소유자 확인
+    const { data: chatroom, error: chatroomError } = await supabase
+      .from("chatrooms")
+      .select("id, subject_id")
+      .eq("id", chatroomId)
+      .eq("user_id", userId)
+      .single();
+
+    if (chatroomError || !chatroom) {
+      console.error("Chatroom not found or unauthorized.");
+      return res.status(404).json({ message: "채팅방을 찾을 수 없거나 수정 권한이 없습니다." });
+    }
+
+    // 채팅방 이름 업데이트
+    const { error: chatroomUpdateError } = await supabase
+      .from("chatrooms")
+      .update({ title: `Chatroom for ${newTitle}` })
+      .eq("id", chatroomId);
+
+    if (chatroomUpdateError) {
+      console.error("Error updating chatroom title:", chatroomUpdateError);
+      return res.status(500).json({ message: "채팅방 이름 수정 중 오류가 발생했습니다." });
+    }
+
+    // subjects 테이블의 name 업데이트
+    const { error: subjectUpdateError } = await supabase
+      .from("subjects")
+      .update({ name: newTitle })
+      .eq("id", chatroom.subject_id);
+
+    if (subjectUpdateError) {
+      console.error("Error updating subject name:", subjectUpdateError);
+      return res.status(500).json({ message: "과목 이름 수정 중 오류가 발생했습니다." });
+    }
+
+    return res.status(200).json({ message: "채팅방과 과목 이름이 성공적으로 수정되었습니다." });
+
+  } catch (error) {
+    console.error("Server error:", error);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+});
+
 
 module.exports = router;
