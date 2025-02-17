@@ -100,7 +100,7 @@ router.post("/register", async (req, res) => {
 
 
 // 로그인 상태 확인 및 사용자 정보 제공 API
-router.get("/user-info", (req, res) => {
+router.get("/user-info", async (req, res) => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(" ")[1];
   console.log("Authorization Header:", authHeader); // 디버깅 추가
@@ -113,8 +113,24 @@ router.get("/user-info", (req, res) => {
 
   try {
     const decoded = jwt.verify(token, jwtSecret);
+    const userId = decoded.userId; // JWT에서 userId 추출
+    const userid = decoded.userid; // JWT에서 userid 추출
     // console.log('username is ', username)
-    return res.status(200).json({ username: decoded.userid, userid: decoded.userId });
+    // Supabase에서 users 테이블 조회하여 username 가져오기
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("username")
+      .eq("id", userId)
+      .single();
+
+      if (error || !user) {
+        console.error("Error fetching user from Supabase:", error);
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      console.log("Fetched user:", user);
+
+    return res.status(200).json({ username: user.username, userid: userid });
   } catch (err) {
     console.error("JWT verification failed:", err); // 디버깅 추가
     return res.status(403).json({ message: "Invalid or expired token" });
