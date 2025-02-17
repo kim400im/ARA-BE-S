@@ -45,7 +45,7 @@ router.post("/chat/new", authenticateToken, async (req, res) => {
     } else {
       console.log("make chatroom!")
       // chatroom_id가 없으면 subjects와 chatrooms 생성
-      const subjectName = `새 과목}`; // 고유한 과목 이름 생성
+      const subjectName = `새 과목`; // 고유한 과목 이름 생성
       const { data: subject, error: subjectError } = await supabase
         .from("subjects")
         .insert([{ name: subjectName, user_id: userId }])
