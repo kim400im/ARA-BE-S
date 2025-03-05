@@ -1,5 +1,5 @@
 # 1. Node.js 공식 이미지 사용 (LTS 버전)
-FROM node:22
+FROM node:20
 
 # 2. 작업 디렉토리 설정
 WORKDIR /app
@@ -7,8 +7,10 @@ WORKDIR /app
 # 3. package.json과 package-lock.json 복사
 COPY package*.json ./
 
-# 4. npm 패키지 설치 (production 모드)
-RUN npm install --only=production
+# 4. npm 캐시 설정 및 패키지 설치 최적화
+RUN npm config set registry https://registry.npmjs.org/ \
+    && npm cache clean --force \
+    && npm install --only=production --omit=dev
 
 # 5. 소스 코드 복사
 COPY . .
