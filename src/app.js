@@ -64,6 +64,6 @@ app.use("/", require("./routes/chatRoutes"))
 const port = 8008
 
 
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`ARA-BE 서버가 ${port} 포트에서 실행 중`);
 });
